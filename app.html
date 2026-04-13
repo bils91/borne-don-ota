@@ -1,0 +1,2434 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Borne de Don — Mosquée</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;400;500;700;800&family=Cinzel:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+:root {
+  --bg: #0a2e22;
+  --card: #0f3a2a;
+  --gold: #D4A843;
+  --gold-light: #F0C866;
+  --white: #FFFFFF;
+  --text-secondary: #A8C4B0;
+  --error: #e74c3c;
+  --success: #27ae60;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Tajawal', 'Segoe UI', Tahoma, sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  touch-action: manipulation;
+}
+
+/* Islamic geometric pattern background */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 0L80 40L40 80L0 40Z' fill='none' stroke='%23D4A843' stroke-width='0.5'/%3E%3Cpath d='M40 10L70 40L40 70L10 40Z' fill='none' stroke='%23D4A843' stroke-width='0.3'/%3E%3Cpath d='M40 20L60 40L40 60L20 40Z' fill='none' stroke='%23D4A843' stroke-width='0.3'/%3E%3C/svg%3E");
+  background-size: 80px 80px;
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.screen {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 1;
+}
+.screen.active {
+  opacity: 1;
+  visibility: visible;
+  z-index: 2;
+}
+
+/* ========== SCREEN 1: WELCOME / VEILLE ========== */
+#screen-welcome {
+  padding: 0;
+  background: url('https://bils91.github.io/borne-don-ota/welcome-bg.jpg') no-repeat center center;
+  background-size: 100% 100%;
+  justify-content: flex-end;
+}
+
+/* Zone invisible pour admin 5-tap (en haut de l'écran) */
+.welcome-logo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  z-index: 10;
+}
+
+/* Bouton FAIRE UN DON */
+.btn-donate {
+  background: linear-gradient(135deg, #004d3d, #006b50);
+  color: #fdfaf1;
+  border: 3px solid #c5a059;
+  border-radius: 50px;
+  padding: 18px 60px;
+  font-size: 26px;
+  font-weight: 700;
+  font-family: 'Cinzel', serif;
+  cursor: pointer;
+  animation: pulse 2s infinite;
+  min-width: 280px;
+  min-height: 66px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  flex-shrink: 0;
+  z-index: 3;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,77,61,0.3); }
+  50% { transform: scale(1.03); box-shadow: 0 0 20px 5px rgba(197,160,89,0.3); }
+}
+
+/* Horaires de prière en bas */
+.prayer-container-poster {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+  z-index: 3;
+}
+
+.prayer-card-p {
+  background: rgba(0,77,61,0.9);
+  border-radius: 8px;
+  padding: 5px 8px;
+  text-align: center;
+  border: 1px solid #c5a059;
+  min-width: 56px;
+  flex: 1;
+  backdrop-filter: blur(4px);
+}
+
+.prayer-card-p.active {
+  border-color: #c5a059;
+  box-shadow: 0 0 10px rgba(197,160,89,0.4);
+  background: rgba(0,77,61,1);
+}
+
+.p-name-ar {
+  font-family: 'Amiri', serif;
+  font-size: 11px;
+  color: #c5a059;
+}
+
+.p-name {
+  font-size: 9px;
+  color: rgba(255,255,255,0.7);
+}
+
+.p-time {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* ========== SCREEN 2: AMOUNT ========== */
+#screen-amount {
+  justify-content: flex-end;
+  padding: 0 24px 20px;
+  background: url('https://bils91.github.io/borne-don-ota/screens-bg.jpg') no-repeat center center;
+  background-size: 100% 100%;
+}
+
+.amount-header {
+  text-align: center;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.amount-header h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #004d3d;
+}
+
+.amount-header p {
+  font-size: 16px;
+  color: #555;
+  margin-top: 4px;
+}
+
+.no-zakat-banner {
+  background: #d32f2f;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border-radius: 12px;
+  margin-top: 8px;
+  text-align: center;
+  box-shadow: 0 3px 8px rgba(211,47,47,0.4);
+  animation: pulseZakat 2s ease-in-out infinite;
+}
+
+@keyframes pulseZakat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+
+.amount-display {
+  background: rgba(255,255,255,0.7);
+  border-radius: 20px;
+  padding: 16px;
+  text-align: center;
+  width: 100%;
+  max-width: 480px;
+  margin-bottom: 12px;
+  border: 2px solid #c5a059;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.amount-value {
+  font-size: 56px;
+  font-weight: 800;
+  color: #004d3d;
+}
+
+.amount-value .currency {
+  font-size: 32px;
+  font-weight: 400;
+  margin-left: 8px;
+  color: #555;
+}
+
+.quick-amounts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 480px;
+  margin-bottom: 10px;
+}
+
+.quick-btn {
+  background: rgba(255,255,255,0.7);
+  border: 2px solid #c5a059;
+  border-radius: 16px;
+  padding: 18px 8px;
+  color: #004d3d;
+  font-size: 24px;
+  font-weight: 700;
+  font-family: 'Tajawal', 'Segoe UI', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 64px;
+}
+
+.quick-btn.selected {
+  background: linear-gradient(135deg, #004d3d, #006b50);
+  color: #fff;
+  border-color: #c5a059;
+}
+
+.numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+  max-width: 480px;
+  margin-bottom: 10px;
+}
+
+.num-btn {
+  background: rgba(255,255,255,0.6);
+  border: 1px solid #c5a059;
+  border-radius: 14px;
+  padding: 16px;
+  color: #004d3d;
+  font-size: 28px;
+  font-weight: 600;
+  font-family: 'Tajawal', 'Segoe UI', sans-serif;
+  cursor: pointer;
+  min-height: 60px;
+  transition: background 0.15s;
+}
+
+.num-btn:active {
+  background: rgba(197,160,89,0.3);
+}
+
+.num-btn.del {
+  color: var(--error);
+  font-size: 22px;
+}
+
+.amount-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.btn-back {
+  background: rgba(255,255,255,0.7);
+  border: 2px solid #c5a059;
+  border-radius: 16px;
+  padding: 18px 24px;
+  color: #004d3d;
+  font-size: 18px;
+  font-weight: 600;
+  font-family: 'Tajawal', 'Segoe UI', sans-serif;
+  cursor: pointer;
+  flex: 1;
+  min-height: 60px;
+}
+
+.btn-continue {
+  background: linear-gradient(135deg, #004d3d, #006b50);
+  border: 2px solid #c5a059;
+  border-radius: 16px;
+  padding: 18px 24px;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: 'Tajawal', 'Segoe UI', sans-serif;
+  cursor: pointer;
+  flex: 2;
+  min-height: 60px;
+  transition: opacity 0.2s;
+}
+
+.btn-continue:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ========== SCREEN 3: PAYMENT INSTRUCTIONS ========== */
+#screen-confirm {
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 0 24px 40px;
+  background: url('https://bils91.github.io/borne-don-ota/screens-bg.jpg') no-repeat center center;
+  background-size: 100% 100%;
+}
+
+.confirm-card {
+  background: rgba(255,255,255,0.7);
+  border-radius: 24px;
+  padding: 40px 32px;
+  text-align: center;
+  width: 100%;
+  max-width: 480px;
+  border: 2px solid #c5a059;
+}
+
+.confirm-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.confirm-label {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.confirm-amount {
+  font-size: 64px;
+  font-weight: 800;
+  color: #004d3d;
+}
+
+.confirm-amount .currency {
+  font-size: 36px;
+  color: #555;
+}
+
+.confirm-category {
+  font-size: 16px;
+  color: #555;
+  margin-top: 8px;
+}
+
+.terminal-instruction {
+  background: rgba(255,255,255,0.7);
+  border-radius: 20px;
+  padding: 28px 24px;
+  text-align: center;
+  width: 100%;
+  max-width: 480px;
+  border: 2px solid #c5a059;
+}
+
+.terminal-instruction .step-icon {
+  font-size: 52px;
+  margin-bottom: 12px;
+}
+
+.terminal-instruction .step-text {
+  font-size: 22px;
+  font-weight: 700;
+  color: #004d3d;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.terminal-instruction .step-sub {
+  font-size: 16px;
+  color: #555;
+  line-height: 1.4;
+}
+
+.terminal-dot-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.terminal-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: blink 1.5s infinite;
+}
+.terminal-dot.demo {
+  background: #e67e22;
+  animation: none;
+}
+.terminal-dot.disconnected {
+  background: var(--error);
+  animation: none;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.terminal-dot-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* Instruction en mode démo */
+.terminal-instruction.demo-mode {
+  border-color: #e67e22;
+  opacity: 0.7;
+}
+.terminal-instruction.connected-mode {
+  border-color: var(--success);
+}
+
+.btn-sumup-login {
+  display: block;
+  margin: 12px auto 0;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #e67e22, #f39c12);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-sumup-login:disabled {
+  opacity: 0.5;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.btn-pay {
+  background: linear-gradient(135deg, #004d3d, #006b50);
+  border: 2px solid #c5a059;
+  border-radius: 16px;
+  padding: 22px 24px;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  font-family: 'Tajawal', 'Segoe UI', sans-serif;
+  cursor: pointer;
+  flex: 2;
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* ========== SCREEN 4: RESULT ========== */
+#screen-result {
+  justify-content: flex-end;
+  gap: 20px;
+  padding: 0 24px 60px;
+  background: url('https://bils91.github.io/borne-don-ota/screens-bg.jpg') no-repeat center center;
+  background-size: 100% 100%;
+}
+
+.result-icon {
+  font-size: 80px;
+  margin-bottom: 8px;
+}
+
+.result-title {
+  font-family: 'Amiri', 'Times New Roman', serif;
+  font-size: 42px;
+  color: #004d3d;
+  text-align: center;
+  direction: rtl;
+}
+
+.result-subtitle {
+  font-size: 20px;
+  color: #555;
+  text-align: center;
+}
+
+.result-amount {
+  font-size: 48px;
+  font-weight: 800;
+  color: #004d3d;
+}
+
+.progress-bar-container {
+  width: 100%;
+  max-width: 400px;
+  height: 6px;
+  background: rgba(0,77,61,0.2);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 24px;
+}
+
+.progress-bar {
+  height: 100%;
+  background: #c5a059;
+  border-radius: 3px;
+  width: 100%;
+  transition: width 0.1s linear;
+}
+
+.result-timer {
+  font-size: 14px;
+  color: #555;
+}
+
+/* ========== HORAIRES DE PRIERE ========== */
+.prayer-container {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.prayer-card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 10px 14px;
+  text-align: center;
+  border: 1px solid rgba(212,168,67,0.15);
+  min-width: 90px;
+  flex: 1;
+}
+
+.prayer-card.active {
+  border-color: var(--gold-light);
+  box-shadow: 0 0 12px rgba(212,168,67,0.3);
+}
+
+.prayer-name {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+.prayer-name-ar {
+  font-size: 13px;
+  color: var(--gold-light);
+}
+
+.prayer-time {
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+}
+
+/* ========== PRINT BUTTON ========== */
+.btn-print {
+  background: rgba(255,255,255,0.7);
+  border: 2px solid #c5a059;
+  border-radius: 16px;
+  padding: 16px 40px;
+  color: #004d3d;
+  font-size: 20px;
+  font-weight: 600;
+  font-family: 'Tajawal', 'Segoe UI', sans-serif;
+  cursor: pointer;
+  min-height: 56px;
+  min-width: 280px;
+  transition: all 0.2s;
+}
+
+.btn-print:active {
+  background: rgba(197,160,89,0.3);
+}
+
+/* ========== TICKET (caché sur écran) ========== */
+#print-ticket {
+  display: none;
+}
+
+/* ========== IMPRESSION — étiqueteuse ========== */
+@media print {
+  /* Cacher tout sauf le ticket */
+  body > *:not(#print-ticket) {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+    margin: 0;
+    padding: 0;
+  }
+  body::before {
+    display: none !important;
+  }
+
+  #print-ticket {
+    display: block !important;
+    width: 58mm; /* Largeur standard étiqueteuse/ticket */
+    max-width: 58mm;
+    margin: 0 auto;
+    padding: 4mm 2mm;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: black;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  .ticket-header {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 2mm;
+    direction: rtl;
+  }
+
+  .ticket-mosque {
+    font-size: 13px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 2mm;
+  }
+
+  .ticket-line {
+    border-top: 1px dashed black;
+    margin: 2mm 0;
+  }
+
+  .ticket-title {
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+
+  .ticket-amount {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 3mm 0 1mm;
+  }
+
+  .ticket-category {
+    font-size: 10px;
+    color: #555;
+  }
+
+  .ticket-date {
+    font-size: 9px;
+    margin-top: 1mm;
+  }
+
+  .ticket-ref {
+    font-size: 8px;
+    color: #888;
+    margin-top: 1mm;
+  }
+
+  .ticket-dua {
+    font-size: 13px;
+    font-weight: bold;
+    direction: rtl;
+    margin-top: 2mm;
+  }
+
+  .ticket-dua-fr {
+    font-size: 9px;
+    font-style: italic;
+    color: #555;
+    margin-bottom: 2mm;
+  }
+
+  .ticket-footer {
+    font-size: 9px;
+    margin-top: 1mm;
+  }
+
+  @page {
+    size: 58mm auto;
+    margin: 0;
+  }
+}
+
+/* ========== LOADING OVERLAY ========== */
+.loading-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(10,46,34,0.95);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.loading-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid var(--card);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  margin-top: 20px;
+  font-size: 18px;
+  color: var(--text-secondary);
+}
+</style>
+</head>
+<body>
+
+<!-- SCREEN 1: WELCOME / VEILLE — Image poster AI en fond -->
+<div id="screen-welcome" class="screen active">
+  <!-- Zone invisible pour admin 5-tap -->
+  <div class="welcome-logo"></div>
+
+  <!-- Bouton FAIRE UN DON superposé en bas -->
+  <button class="btn-donate" id="btn-start" onclick="goTo('amount')">FAIRE UN DON</button>
+
+  <!-- IDs cachés pour le JS prayer times (évite les erreurs) -->
+  <div style="display:none">
+    <span id="prayer-fajr"><span id="time-fajr"></span></span>
+    <span id="prayer-dhuhr"><span id="time-dhuhr"></span></span>
+    <span id="prayer-asr"><span id="time-asr"></span></span>
+    <span id="prayer-maghrib"><span id="time-maghrib"></span></span>
+    <span id="prayer-isha"><span id="time-isha"></span></span>
+  </div>
+</div>
+
+<!-- SCREEN 2: AMOUNT -->
+<div id="screen-amount" class="screen">
+  <div class="amount-header">
+    <h2>💚 Don libre</h2>
+    <p>Choisissez ou saisissez un montant</p>
+    <div class="no-zakat-banner">⛔ PAS DE ZAKAT ⛔</div>
+  </div>
+
+  <div class="amount-display">
+    <div class="amount-value">
+      <span id="display-amount">0</span>
+      <span class="currency">€</span>
+    </div>
+  </div>
+
+  <div class="quick-amounts">
+    <button class="quick-btn" data-amount="5" onclick="sM(5, this)">5 €</button>
+    <button class="quick-btn" data-amount="10" onclick="sM(10, this)">10 €</button>
+    <button class="quick-btn" data-amount="20" onclick="sM(20, this)">20 €</button>
+    <button class="quick-btn" data-amount="30" onclick="sM(30, this)">30 €</button>
+    <button class="quick-btn" data-amount="50" onclick="sM(50, this)">50 €</button>
+    <button class="quick-btn" data-amount="100" onclick="sM(100, this)">100 €</button>
+  </div>
+
+  <div class="numpad">
+    <button class="num-btn" onclick="nP('1')">1</button>
+    <button class="num-btn" onclick="nP('2')">2</button>
+    <button class="num-btn" onclick="nP('3')">3</button>
+    <button class="num-btn" onclick="nP('4')">4</button>
+    <button class="num-btn" onclick="nP('5')">5</button>
+    <button class="num-btn" onclick="nP('6')">6</button>
+    <button class="num-btn" onclick="nP('7')">7</button>
+    <button class="num-btn" onclick="nP('8')">8</button>
+    <button class="num-btn" onclick="nP('9')">9</button>
+    <button class="num-btn" style="visibility:hidden"></button>
+    <button class="num-btn" onclick="nP('0')">0</button>
+    <button class="num-btn del" onclick="nP('del')">⌫</button>
+  </div>
+
+  <div class="amount-actions">
+    <button class="btn-back" onclick="goTo('welcome')">← Retour</button>
+    <button class="btn-continue" id="btn-continue" disabled onclick="goCf()">Continuer →</button>
+  </div>
+</div>
+
+<!-- SCREEN 3: CONFIRMATION + TERMINAL INSTRUCTIONS -->
+<div id="screen-confirm" class="screen">
+  <div class="confirm-card">
+    <div class="confirm-icon">💚</div>
+    <div class="confirm-label">Votre don</div>
+    <div class="confirm-amount">
+      <span id="confirm-amount-value">0</span>
+      <span class="currency">€</span>
+    </div>
+    <div class="confirm-category">Don libre</div>
+  </div>
+
+  <div class="terminal-instruction">
+    <div class="step-icon">💳</div>
+    <div class="step-text" id="terminal-step-text">Le montant sera envoyé<br>automatiquement au terminal</div>
+    <div class="step-sub" id="terminal-step-sub">Appuyez sur "Payer" puis présentez<br>votre carte sur le terminal SumUp</div>
+    <button class="btn-sumup-login" id="btn-sumup-login" onclick="sumupLogin()" style="display:none;">
+      🔑 Se connecter à SumUp
+    </button>
+    <div class="terminal-dot-row">
+      <div class="terminal-dot"></div>
+      <span class="terminal-dot-label" id="terminal-dot-label">Terminal connecté</span>
+    </div>
+  </div>
+
+  <div class="confirm-actions">
+    <button class="btn-back" onclick="goTo('amount')">← Modifier</button>
+    <button class="btn-pay" id="btn-pay" onclick="startPayment()">
+      💳 Payer <span id="btn-pay-amount"></span>
+    </button>
+  </div>
+</div>
+
+<!-- SCREEN 4: RESULT -->
+<div id="screen-result" class="screen">
+  <div class="result-icon" id="result-icon">✅</div>
+  <div class="result-title" id="result-title">جزاك الله خيراً</div>
+  <div class="result-subtitle" id="result-subtitle">Qu'Allah vous récompense</div>
+  <div class="result-amount" id="result-amount">0 €</div>
+  <button class="btn-print" id="btn-print" onclick="printTicket()">
+    🖨️ Imprimer le reçu
+  </button>
+  <div class="progress-bar-container">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+  <div class="result-timer" id="result-timer">Retour automatique dans 7s</div>
+</div>
+
+<!-- TICKET IMPRESSION (caché, visible uniquement à l'impression) -->
+<div id="print-ticket">
+  <div class="ticket-mosque" style="font-size:11px;">ASSOCIATION MUSULMANE<br>SOUFIE HIBRIA BELKAIDIA</div>
+  <div style="font-size:8px;text-align:center;">38 Rue Arago - 93000 Bobigny</div>
+  <div class="ticket-line"></div>
+  <div class="ticket-title">REÇU DE DON</div>
+  <div class="ticket-line"></div>
+  <div class="ticket-amount" id="ticket-amount">0 €</div>
+  <div class="ticket-category" id="ticket-category">Don libre</div>
+  <div class="ticket-line"></div>
+  <div class="ticket-date" id="ticket-date"></div>
+  <div class="ticket-ref" id="ticket-ref"></div>
+  <div class="ticket-line"></div>
+  <div class="ticket-dua-fr">Qu'Allah vous récompense</div>
+  <div class="ticket-footer">Merci pour votre générosité</div>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Traitement en cours...</div>
+</div>
+
+<!-- ADMIN OVERLAY -->
+<div id="admin-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,15,10,0.97);z-index:10000;flex-direction:column;align-items:center;justify-content:center;font-family:inherit;">
+
+  <!-- PIN Screen -->
+  <div id="admin-pin-screen" style="display:flex;flex-direction:column;align-items:center;">
+    <div style="font-size:48px;margin-bottom:12px;">&#128274;</div>
+    <div id="admin-pin-title" style="color:#D4AF37;font-size:20px;font-weight:bold;margin-bottom:24px;">Acc&egrave;s Administrateur</div>
+    <div id="pin-dots" style="color:#fff;font-size:40px;letter-spacing:18px;margin-bottom:8px;font-family:monospace;">&#9675;&#9675;&#9675;&#9675;</div>
+    <div id="admin-pin-error" style="color:#e74c3c;font-size:14px;min-height:22px;margin-bottom:16px;"></div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,72px);gap:10px;">
+      <button onclick="adminPinPress('1')" style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.15);color:#fff;font-size:24px;font-weight:bold;cursor:pointer;">1</button>
+      <button onclick="adminPinPress('2')" style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.15);color:#fff;font-size:24px;font-weight:bold;cursor:pointer;">2</button>
+      <button onclick="adminPinPress('3')" style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.15);color:#fff;font-size:24px;font-weight:bold;cursor:pointer;">3</button>
+      <button onclick="adminPinPress('4')" style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.15);color:#fff;font-size:24px;font-weight:bold;cursor:pointer;">4</button>
+      <button onclick="adminPinPress('5')" style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.15);color:#fff;font-size:24px;font-weight:bold;cursor:pointer;">5</button>
+      <button onclick="adminPinPress('6')" style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.15);color:#fff;font-size:24px;font-weight:bold;cursor:pointer;">6</button>
+      <button onclick="adminPinPress('7')" style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.15);color:#fff;font-size:24px;font-weight:bold;cursor:pointer;">7</button>
+      <button onclick="adminPinPress('8')" style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.15);color:#fff;font-size:24px;font-weight:bold;cursor:pointer;">8</button>
+      <button onclick="adminPinPress('9')" style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.15);color:#fff;font-size:24px;font-weight:bold;cursor:pointer;">9</button>
+      <button onclick="closeAdmin()" style="width:72px;height:72px;border-radius:50%;background:rgba(255,80,80,0.1);border:2px solid rgba(255,80,80,0.3);color:#e74c3c;font-size:14px;cursor:pointer;">Annuler</button>
+      <button onclick="adminPinPress('0')" style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.15);color:#fff;font-size:24px;font-weight:bold;cursor:pointer;">0</button>
+      <button onclick="adminPinDel()" style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.15);color:#fff;font-size:22px;cursor:pointer;">&#9003;</button>
+    </div>
+  </div>
+
+  <!-- Admin Menu -->
+  <div id="admin-menu" style="display:none;flex-direction:column;align-items:center;width:92%;max-width:420px;max-height:90vh;overflow-y:auto;padding:20px 0;">
+    <div style="font-size:36px;margin-bottom:6px;">&#9881;&#65039;</div>
+    <div style="color:#D4AF37;font-size:20px;font-weight:bold;margin-bottom:16px;">Administration</div>
+
+    <!-- Status Dashboard -->
+    <div id="admin-status-box" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(212,175,55,0.2);border-radius:14px;padding:14px 16px;margin-bottom:14px;">
+      <div style="color:#D4AF37;font-size:13px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">&#128202; Statut du syst&egrave;me</div>
+      <div id="admin-status-content" style="font-size:13px;color:#ccc;line-height:1.8;">
+        Chargement...
+      </div>
+    </div>
+
+    <!-- Statistiques du jour -->
+    <div id="admin-stats-box" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(212,175,55,0.2);border-radius:14px;padding:14px 16px;margin-bottom:14px;">
+      <div style="color:#D4AF37;font-size:13px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">&#128176; Statistiques du jour</div>
+      <div id="admin-stats-content" style="font-size:13px;color:#ccc;line-height:1.8;">
+        Chargement...
+      </div>
+    </div>
+
+    <!-- Actions principales -->
+    <div style="width:100%;color:#D4AF37;font-size:12px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-left:4px;">Actions</div>
+
+    <button onclick="adminAction('testprint')" style="width:100%;padding:14px 16px;margin-bottom:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(212,175,55,0.3);border-radius:12px;color:#fff;font-size:15px;text-align:left;cursor:pointer;">&#128424; Tester l'imprimante</button>
+    <button onclick="adminAction('reconnect')" style="width:100%;padding:14px 16px;margin-bottom:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(212,175,55,0.3);border-radius:12px;color:#fff;font-size:15px;text-align:left;cursor:pointer;">&#128260; Reconnecter le terminal</button>
+    <button id="btn-kiosk-toggle" onclick="adminAction('kioskToggle')" style="width:100%;padding:14px 16px;margin-bottom:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(212,175,55,0.3);border-radius:12px;color:#fff;font-size:15px;text-align:left;cursor:pointer;">&#128274; Mode Kiosque : ...</button>
+    <button onclick="adminAction('settings')" style="width:100%;padding:14px 16px;margin-bottom:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(212,175,55,0.3);border-radius:12px;color:#fff;font-size:15px;text-align:left;cursor:pointer;">&#9881;&#65039; Param&egrave;tres Android</button>
+    <button onclick="adminAction('changepin')" style="width:100%;padding:14px 16px;margin-bottom:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(212,175,55,0.3);border-radius:12px;color:#fff;font-size:15px;text-align:left;cursor:pointer;">&#128273; Changer le PIN</button>
+    <button onclick="adminAction('resetstats')" style="width:100%;padding:14px 16px;margin-bottom:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,165,0,0.3);border-radius:12px;color:#ffa500;font-size:15px;text-align:left;cursor:pointer;">&#128465; R&eacute;initialiser les stats du jour</button>
+    <button onclick="adminAction('exit')" style="width:100%;padding:14px 16px;margin-bottom:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,80,80,0.4);border-radius:12px;color:#e74c3c;font-size:15px;text-align:left;cursor:pointer;">&#128682; Quitter l'application</button>
+
+    <button onclick="closeAdmin()" style="width:100%;padding:12px 16px;margin-top:12px;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:12px;color:#999;font-size:14px;text-align:center;cursor:pointer;">Fermer</button>
+  </div>
+</div>
+
+<script>
+// ===== PLUGIN SUMUP — détection lazy (au moment de l'utilisation) =====
+var SumUpNative = null;
+function getSumUp() {
+  if (SumUpNative) return SumUpNative;
+
+  // Capacitor 8: créer un proxy via nativePromise
+  if (window.Capacitor && window.Capacitor.nativePromise && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+    console.log('getSumUp: création proxy via nativePromise');
+    SumUpNative = {
+      init: function(opts) { return window.Capacitor.nativePromise('SumUpPlugin', 'init', opts || {}); },
+      login: function(opts) { return window.Capacitor.nativePromise('SumUpPlugin', 'login', opts || {}); },
+      pay: function(opts) { return window.Capacitor.nativePromise('SumUpPlugin', 'pay', opts); },
+      status: function(opts) { return window.Capacitor.nativePromise('SumUpPlugin', 'status', opts || {}); },
+      checkTerminal: function(opts) { return window.Capacitor.nativePromise('SumUpPlugin', 'checkTerminal', opts || {}); },
+      openSettings: function(opts) { return window.Capacitor.nativePromise('SumUpPlugin', 'openSettings', opts || {}); },
+      logout: function(opts) { return window.Capacitor.nativePromise('SumUpPlugin', 'logout', opts || {}); },
+      prepareCheckout: function(opts) { return window.Capacitor.nativePromise('SumUpPlugin', 'prepareCheckout', opts || {}); }
+    };
+    return SumUpNative;
+  }
+  return null;
+}
+
+// ===== PLUGIN IMPRIMANTE — proxy Capacitor 8 =====
+var PrinterNative = null;
+function getPrinter() {
+  if (PrinterNative) return PrinterNative;
+  if (window.Capacitor && window.Capacitor.nativePromise && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+    PrinterNative = {
+      status: function(opts) { return window.Capacitor.nativePromise('TicketPrinter', 'status', opts || {}); },
+      print: function(opts) { return window.Capacitor.nativePromise('TicketPrinter', 'print', opts); }
+    };
+    return PrinterNative;
+  }
+  return null;
+}
+
+
+// ===== PLUGIN KIOSK — proxy Capacitor 8 =====
+var KioskNative = null;
+function getKiosk() {
+  if (KioskNative) return KioskNative;
+  if (window.Capacitor && window.Capacitor.nativePromise && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+    KioskNative = {
+      lock: function(opts) { return window.Capacitor.nativePromise('KioskPlugin', 'lock', opts || {}); },
+      unlock: function(opts) { return window.Capacitor.nativePromise('KioskPlugin', 'unlock', opts || {}); },
+      verifyPin: function(opts) { return window.Capacitor.nativePromise('KioskPlugin', 'verifyPin', opts); },
+      exitApp: function(opts) { return window.Capacitor.nativePromise('KioskPlugin', 'exitApp', opts); },
+      openSettings: function(opts) { return window.Capacitor.nativePromise('KioskPlugin', 'openSettings', opts); },
+      setPin: function(opts) { return window.Capacitor.nativePromise('KioskPlugin', 'setPin', opts); },
+      status: function(opts) { return window.Capacitor.nativePromise('KioskPlugin', 'status', opts || {}); }
+    };
+    return KioskNative;
+  }
+  return null;
+}
+
+// ===== CONFIGURATION SUMUP =====
+var CONFIG = {
+  SUMUP_API_KEY: 'sup_sk_ooFlUBNpqpCDQbS4Wu03o4RQXRfaGhqo7',
+  SUMUP_MERCHANT_CODE: 'MA5TQCSY',
+  SUMUP_READER_ID: 'rdr_5H6B9N2KZA8ND9AMZDQ5ZG7081',
+  SUMUP_AFFILIATE_KEY: 'sup_afk_TCEuMFMfeTo0iUxqg7ekghqyz24Fhqwt',
+  SUMUP_APP_ID: 'com.mosquee.bornedon',
+  CURRENCY: 'EUR',
+  // OAuth2 credentials pour login automatique par token
+  SUMUP_CLIENT_ID: 'cc_classic_JuvINtRSM9Su9Q5LFtWs3KpQhb4FV',
+  SUMUP_CLIENT_SECRET: 'cc_sk_classic_J0SonrqWvQfp5VatN8pxpisyb2cb0tttTERbx9nPhJflS2emPX'
+};
+
+// ===== SUMUP TOKEN MANAGEMENT =====
+var sumupAccessToken = null;
+
+function fetchSumUpToken() {
+  return fetch('https://api.sumup.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'grant_type=client_credentials&client_id=' + encodeURIComponent(CONFIG.SUMUP_CLIENT_ID) +
+          '&client_secret=' + encodeURIComponent(CONFIG.SUMUP_CLIENT_SECRET) +
+          '&scope=payments%20user.app-settings%20transactions.history%20user.profile_readonly'
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.access_token) {
+      sumupAccessToken = data.access_token;
+      console.log('SumUp token obtenu, scopes:', data.scope);
+      return data.access_token;
+    }
+    throw new Error(data.detail || 'Token error');
+  });
+}
+
+// ===== DETECTION MODE SERVEUR =====
+// Si chargé depuis un serveur réseau (pas les fichiers bundled Capacitor),
+// utiliser l'API backend pour SumUp et les stats centralisées
+var IS_SERVER_MODE = (function() {
+  var h = window.location.hostname;
+  // En mode serveur si on a un hostname qui n'est pas vide/localhost/capacitor
+  return h && h !== '' && h !== 'localhost' && h !== '127.0.0.1' && !window.location.protocol.startsWith('file');
+})();
+
+// ===== STATE =====
+var S = {
+  cat: 'libre',
+  name: 'Don libre',
+  icon: '💚',
+  fixed: null,
+  amt: 0,
+  pers: 1,
+  str: ''
+};
+
+var currentScreen = 'welcome';
+var inactivityTimer = null;
+var resultTimer = null;
+var resultInterval = null;
+var INACTIVITY_TIMEOUT = 120000; // 2 min
+var RESULT_TIMEOUT = 7000; // 7s
+
+// ===== LOCAL STATS (stockées dans localStorage) =====
+function getLocalStats() {
+  try {
+    var data = localStorage.getItem('borne_stats');
+    if (data) {
+      var stats = JSON.parse(data);
+      // Reset si jour différent
+      var today = new Date().toISOString().split('T')[0];
+      if (stats.date !== today) {
+        stats = { date: today, total: 0, nb_dons: 0 };
+        localStorage.setItem('borne_stats', JSON.stringify(stats));
+      }
+      return stats;
+    }
+  } catch (e) {}
+  var fresh = { date: new Date().toISOString().split('T')[0], total: 0, nb_dons: 0 };
+  localStorage.setItem('borne_stats', JSON.stringify(fresh));
+  return fresh;
+}
+
+function addLocalDon(montant) {
+  var stats = getLocalStats();
+  stats.total += montant;
+  stats.nb_dons += 1;
+  localStorage.setItem('borne_stats', JSON.stringify(stats));
+}
+
+// ===== NAVIGATION =====
+function goTo(id) {
+  var screens = document.querySelectorAll('.screen');
+  for (var i = 0; i < screens.length; i++) {
+    screens[i].classList.remove('active');
+  }
+  document.getElementById('screen-' + id).classList.add('active');
+  currentScreen = id;
+
+  resetInactivity();
+
+  if (id === 'welcome') {
+    resetState();
+    loadPrayerTimes();
+  }
+  if (id === 'amount') {
+    updateDisplay();
+    updateContinueBtn();
+  }
+  if (id === 'result') {
+    startResultCountdown();
+  }
+}
+
+// ===== AMOUNT SELECTION =====
+function sM(v, el) {
+  var btns = document.querySelectorAll('.quick-btn');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].classList.remove('selected');
+  }
+  if (el) el.classList.add('selected');
+  S.amt = v;
+  S.str = String(v);
+  S.fixed = v;
+  updateDisplay();
+  updateContinueBtn();
+  resetInactivity();
+}
+
+// ===== NUMPAD =====
+function nP(k) {
+  var btns = document.querySelectorAll('.quick-btn');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].classList.remove('selected');
+  }
+  S.fixed = null;
+
+  if (k === 'del') {
+    S.str = S.str.slice(0, -1);
+  } else {
+    if (S.str.length >= 5) return;
+    if (S.str === '0') S.str = '';
+    S.str += k;
+  }
+
+  S.amt = S.str === '' ? 0 : parseInt(S.str, 10);
+  updateDisplay();
+  updateContinueBtn();
+  resetInactivity();
+}
+
+function updateDisplay() {
+  document.getElementById('display-amount').textContent = S.amt || '0';
+}
+
+function updateContinueBtn() {
+  document.getElementById('btn-continue').disabled = (S.amt <= 0);
+}
+
+// ===== CONFIRMATION =====
+function goCf() {
+  if (S.amt <= 0) return;
+  document.getElementById('confirm-amount-value').textContent = S.amt;
+  document.getElementById('btn-pay-amount').textContent = S.amt + ' €';
+
+  // Mode Cloud API — toujours prêt si config OK
+  if (CONFIG.SUMUP_API_KEY && CONFIG.SUMUP_READER_ID) {
+    updateTerminalUI(true, true);
+  } else {
+    updateTerminalUI(false, false);
+  }
+
+  goTo('confirm');
+}
+
+// Mise à jour de l'UI du terminal selon l'état réel
+function updateTerminalUI(usbConnected, loggedIn) {
+  var termInstr = document.querySelector('.terminal-instruction');
+  var stepText = document.getElementById('terminal-step-text');
+  var stepSub = document.getElementById('terminal-step-sub');
+  var dot = document.querySelector('.terminal-dot');
+  var dotLabel = document.getElementById('terminal-dot-label');
+  var stepIcon = document.querySelector('.terminal-instruction .step-icon');
+  var btnPay = document.getElementById('btn-pay');
+  var btnLogin = document.getElementById('btn-sumup-login');
+
+  termInstr.className = 'terminal-instruction'; // reset
+  btnLogin.style.display = 'none';
+
+  if (usbConnected && loggedIn) {
+    // Terminal branché + compte connecté → prêt
+    termInstr.classList.add('connected-mode');
+    stepIcon.textContent = '💳';
+    stepText.innerHTML = 'Terminal SumUp prêt';
+    stepSub.innerHTML = 'Appuyez sur "Payer" puis présentez<br>votre carte sur le terminal';
+    dot.className = 'terminal-dot';
+    dotLabel.textContent = 'Terminal connecté (Wi-Fi)';
+    btnPay.disabled = false;
+  } else if (usbConnected && !loggedIn) {
+    // Terminal branché mais SDK pas connecté — montrer bouton login
+    termInstr.classList.add('demo-mode');
+    stepIcon.textContent = '🔑';
+    stepText.innerHTML = 'Connexion requise';
+    stepSub.innerHTML = 'Connectez-vous à votre compte SumUp<br>(une seule fois nécessaire)';
+    dot.className = 'terminal-dot demo';
+    dotLabel.textContent = 'Solo détecté — compte non connecté';
+    btnLogin.style.display = 'block';
+    btnPay.disabled = true;
+  } else {
+    // Pas de terminal USB
+    termInstr.classList.add('demo-mode');
+    stepIcon.textContent = '🔌';
+    stepText.innerHTML = 'Branchez le terminal SumUp<br>par câble USB';
+    stepSub.innerHTML = 'Connectez le SumUp Solo à la tablette<br>puis relancez l\'application.';
+    dot.className = 'terminal-dot disconnected';
+    dotLabel.textContent = 'Terminal non connecté';
+    btnPay.disabled = true;
+  }
+}
+
+function sumupLogin() {
+  var plugin = getSumUp();
+  if (!plugin) return;
+  var btn = document.getElementById('btn-sumup-login');
+  btn.disabled = true;
+  btn.textContent = 'Connexion en cours...';
+  document.getElementById('terminal-step-sub').innerHTML = 'Écran de connexion SumUp...';
+
+  // Login classique — ouvre l'écran SumUp
+  plugin.login().then(function(res) {
+    console.log('SumUp login result:', JSON.stringify(res));
+    btn.disabled = false;
+    btn.textContent = '🔑 Se connecter à SumUp';
+    if (res.success) {
+      updateTerminalUI(true, true);
+    } else {
+      document.getElementById('terminal-step-sub').innerHTML = res.message || 'Échec de la connexion';
+    }
+  }).catch(function(err) {
+    console.log('SumUp login error:', err.message || err);
+    btn.disabled = false;
+    btn.textContent = '🔑 Réessayer';
+    document.getElementById('terminal-step-sub').innerHTML = err.message || 'Erreur de connexion';
+  });
+}
+
+// ===== SUMUP API (appel direct depuis l'app) =====
+function sumupFetch(method, endpoint, body) {
+  var options = {
+    method: method,
+    headers: {
+      'Authorization': 'Bearer ' + CONFIG.SUMUP_API_KEY,
+      'Content-Type': 'application/json'
+    }
+  };
+  if (body) {
+    options.body = JSON.stringify(body);
+  }
+  return fetch('https://api.sumup.com' + endpoint, options)
+    .then(function(r) {
+      return r.json().then(function(data) {
+        return { status: r.status, data: data };
+      });
+    });
+}
+
+// ===== PAYMENT =====
+var pollTimer = null;
+var pollCount = 0;
+var MAX_POLL = 60; // 60 x 2s = 2 min max
+
+function startPayment() {
+  var btnPay = document.getElementById('btn-pay');
+  btnPay.disabled = true;
+
+  // ===== MODE SERVEUR (via réseau local — PC gère SumUp) =====
+  if (IS_SERVER_MODE) {
+    showLoading(true);
+    document.querySelector('.loading-text').textContent = 'Création du paiement...';
+
+    fetch('/api/don', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ montant: S.amt, categorie: S.cat, devise: CONFIG.CURRENCY })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.error) {
+        showLoading(false);
+        btnPay.disabled = false;
+        showResult(false, data.error);
+        return;
+      }
+      if (data.demo) {
+        document.querySelector('.loading-text').textContent = 'Mode démo — paiement simulé...';
+      } else {
+        document.querySelector('.loading-text').textContent = 'En attente du paiement sur le terminal...';
+      }
+      pollCount = 0;
+      pollStatusServer(data.checkout_id);
+    })
+    .catch(function() {
+      showLoading(false);
+      btnPay.disabled = false;
+      showResult(false, 'Erreur de connexion au serveur');
+    });
+    return;
+  }
+
+  // ===== MODE CLOUD API (appel direct SumUp depuis la tablette) =====
+  showLoading(true);
+  document.querySelector('.loading-text').textContent = 'Envoi au terminal...';
+
+  var amountCents = Math.round(S.amt * 100);
+  var foreignTxId = 'DON-' + Date.now();
+
+  sumupFetch('POST', '/v0.1/merchants/' + CONFIG.SUMUP_MERCHANT_CODE + '/readers/' + CONFIG.SUMUP_READER_ID + '/checkout', {
+    total_amount: {
+      currency: CONFIG.CURRENCY,
+      minor_unit: 2,
+      value: amountCents
+    },
+    affiliate: {
+      app_id: CONFIG.SUMUP_APP_ID,
+      foreign_transaction_id: foreignTxId,
+      key: CONFIG.SUMUP_AFFILIATE_KEY
+    },
+    description: 'Don ' + S.cat
+  })
+  .then(function(result) {
+    if (result.status >= 200 && result.status < 300 && result.data && result.data.data) {
+      document.querySelector('.loading-text').textContent = 'En attente du paiement sur le terminal...';
+      var clientTxId = result.data.data.client_transaction_id || foreignTxId;
+      pollCount = 0;
+      pollCloudStatus(clientTxId, foreignTxId);
+    } else {
+      showLoading(false);
+      btnPay.disabled = false;
+      var errMsg = 'Erreur terminal';
+      if (result.data && result.data.errors && result.data.errors.type === 'READER_BUSY') {
+        errMsg = 'Terminal occupé — réessayez';
+      } else if (result.data && result.data.errors && result.data.errors.detail) {
+        errMsg = result.data.errors.detail;
+      }
+      showResult(false, errMsg);
+    }
+  })
+  .catch(function(err) {
+    showLoading(false);
+    btnPay.disabled = false;
+    showResult(false, 'Erreur de connexion: ' + (err.message || err));
+  });
+}
+
+function pollStatus(checkoutId) {
+  if (pollTimer) clearTimeout(pollTimer);
+  pollCount++;
+
+  if (pollCount > MAX_POLL) {
+    showLoading(false);
+    document.getElementById('btn-pay').disabled = false;
+    showResult(false, 'Délai dépassé — veuillez réessayer');
+    return;
+  }
+
+  sumupFetch('GET', '/v0.1/checkouts/' + checkoutId)
+    .then(function(result) {
+      if (result.status >= 200 && result.status < 300) {
+        var status = result.data.status || 'PENDING';
+
+        if (status === 'PAID') {
+          addLocalDon(S.amt);
+          recordDonation(S.amt);
+          showLoading(false);
+          document.getElementById('btn-pay').disabled = false;
+          showResult(true);
+        } else if (status === 'FAILED' || status === 'EXPIRED') {
+          showLoading(false);
+          document.getElementById('btn-pay').disabled = false;
+          showResult(false, 'Paiement refusé');
+        } else {
+          pollTimer = setTimeout(function() {
+            pollStatus(checkoutId);
+          }, 2000);
+        }
+      } else {
+        pollTimer = setTimeout(function() {
+          pollStatus(checkoutId);
+        }, 2000);
+      }
+    })
+    .catch(function() {
+      pollTimer = setTimeout(function() {
+        pollStatus(checkoutId);
+      }, 3000);
+    });
+}
+
+// ===== POLLING SERVEUR (mode réseau local) =====
+function pollStatusServer(checkoutId) {
+  if (pollTimer) clearTimeout(pollTimer);
+  pollCount++;
+
+  if (pollCount > MAX_POLL) {
+    showLoading(false);
+    document.getElementById('btn-pay').disabled = false;
+    showResult(false, 'Délai dépassé — veuillez réessayer');
+    return;
+  }
+
+  fetch('/api/don/' + checkoutId + '/status')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'PAID') {
+        addLocalDon(S.amt);
+        recordDonation(S.amt);
+        showLoading(false);
+        document.getElementById('btn-pay').disabled = false;
+        showResult(true);
+      } else if (data.status === 'FAILED' || data.status === 'EXPIRED') {
+        showLoading(false);
+        document.getElementById('btn-pay').disabled = false;
+        showResult(false, 'Paiement refusé');
+      } else {
+        pollTimer = setTimeout(function() {
+          pollStatusServer(checkoutId);
+        }, 2000);
+      }
+    })
+    .catch(function() {
+      pollTimer = setTimeout(function() {
+        pollStatusServer(checkoutId);
+      }, 3000);
+    });
+}
+
+// ===== POLLING CLOUD API (appel direct SumUp depuis la tablette) =====
+// Stratégie : poller l'historique des transactions et matcher par client_transaction_id
+// Le Reader GET endpoint ne fonctionne pas (toujours 404)
+// L'historique montre la transaction dès que la carte est présentée (succès ou refus)
+// Si personne ne présente de carte → timeout après MAX_POLL
+
+function pollCloudStatus(clientTxId, foreignTxId) {
+  if (pollTimer) clearTimeout(pollTimer);
+  pollCount++;
+
+  if (pollCount > MAX_POLL) {
+    showLoading(false);
+    document.getElementById('btn-pay').disabled = false;
+    showResult(false, 'Délai dépassé — veuillez réessayer');
+    return;
+  }
+
+  console.log('[Poll #' + pollCount + '] Recherche txId=' + clientTxId);
+
+  sumupFetch('GET', '/v0.1/me/transactions/history?order=descending&limit=10')
+    .then(function(result) {
+      if (result.status >= 200 && result.status < 300 && result.data) {
+        var items = result.data.items || result.data || [];
+        if (Array.isArray(items)) {
+          for (var i = 0; i < items.length; i++) {
+            if (items[i].client_transaction_id === clientTxId) {
+              var txStatus = (items[i].status || '').toUpperCase();
+              console.log('[Poll] TROUVÉ! status=' + txStatus + ' amount=' + items[i].amount);
+
+              if (txStatus === 'SUCCESSFUL' || txStatus === 'PAID') {
+                addLocalDon(S.amt);
+                recordDonation(S.amt);
+                showLoading(false);
+                document.getElementById('btn-pay').disabled = false;
+                showResult(true);
+                return;
+              } else if (txStatus === 'FAILED' || txStatus === 'CANCELLED' || txStatus === 'EXPIRED' || txStatus === 'DECLINED') {
+                showLoading(false);
+                document.getElementById('btn-pay').disabled = false;
+                showResult(false, 'Paiement refusé');
+                return;
+              } else {
+                // PENDING — encore en cours, continuer à poller
+                console.log('[Poll] Status PENDING — on continue...');
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      // Transaction pas encore dans l'historique — le terminal attend la carte
+      console.log('[Poll #' + pollCount + '] En attente...');
+      pollTimer = setTimeout(function() { pollCloudStatus(clientTxId, foreignTxId); }, 3000);
+    })
+    .catch(function(err) {
+      console.log('[Poll] Erreur: ' + (err.message || err));
+      pollTimer = setTimeout(function() { pollCloudStatus(clientTxId, foreignTxId); }, 3000);
+    });
+}
+
+function showResult(success, errorMsg) {
+  var icon = document.getElementById('result-icon');
+  var title = document.getElementById('result-title');
+  var subtitle = document.getElementById('result-subtitle');
+  var amount = document.getElementById('result-amount');
+  var btnPrint = document.getElementById('btn-print');
+
+  if (success) {
+    icon.textContent = '✅';
+    title.textContent = 'جزاك الله خيراً';
+    title.style.direction = 'rtl';
+    subtitle.textContent = 'Qu\'Allah vous récompense';
+    amount.textContent = S.amt + ' €';
+    btnPrint.style.display = 'block';
+
+    // Préparer le ticket
+    var now = new Date();
+    var dateStr = now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    var timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    var refNum = 'DON-' + now.getFullYear() + pad2(now.getMonth()+1) + pad2(now.getDate()) + '-' + pad2(now.getHours()) + pad2(now.getMinutes()) + pad2(now.getSeconds());
+
+    document.getElementById('ticket-amount').textContent = S.amt + ' €';
+    document.getElementById('ticket-category').textContent = S.name;
+    document.getElementById('ticket-date').textContent = dateStr + ' à ' + timeStr;
+    document.getElementById('ticket-ref').textContent = 'Réf: ' + refNum;
+  } else {
+    icon.textContent = '❌';
+    title.textContent = 'Paiement échoué';
+    title.style.direction = 'ltr';
+    subtitle.textContent = errorMsg || 'Veuillez réessayer';
+    amount.textContent = '';
+    btnPrint.style.display = 'none';
+  }
+
+  goTo('result');
+}
+
+function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+// ===== IMPRESSION TICKET =====
+var printCooldown = false;
+
+function buildTicketHTML() {
+  var now = new Date();
+  var dateStr = now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  var timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  var refNum = 'DON-' + now.getFullYear() + pad2(now.getMonth()+1) + pad2(now.getDate()) + '-' + pad2(now.getHours()) + pad2(now.getMinutes()) + pad2(now.getSeconds());
+
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+    '<style>' +
+    'body{font-family:monospace;width:58mm;margin:0 auto;padding:4mm 2mm;text-align:center;font-size:11px;line-height:1.4;color:#000;}' +
+    '.header{font-size:14px;font-weight:bold;direction:rtl;margin-bottom:2mm;}' +
+    '.mosque{font-size:13px;font-weight:bold;text-transform:uppercase;letter-spacing:2px;margin-bottom:2mm;}' +
+    '.line{border-top:1px dashed #000;margin:2mm 0;}' +
+    '.title{font-size:12px;font-weight:bold;letter-spacing:1px;}' +
+    '.amount{font-size:22px;font-weight:bold;margin:3mm 0 1mm;}' +
+    '.cat{font-size:10px;color:#555;}' +
+    '.date{font-size:9px;margin-top:1mm;}' +
+    '.ref{font-size:8px;color:#888;margin-top:1mm;}' +
+    '.dua{font-size:13px;font-weight:bold;direction:rtl;margin-top:2mm;}' +
+    '.duafr{font-size:9px;font-style:italic;color:#555;margin-bottom:2mm;}' +
+    '.footer{font-size:9px;margin-top:1mm;}' +
+    '@page{size:58mm auto;margin:0;}' +
+    '</style></head><body>' +
+    '<div class="mosque" style="font-size:11px;letter-spacing:1px;">ASSOCIATION MUSULMANE<br>SOUFIE HIBRIA BELKAIDIA</div>' +
+    '<div style="font-size:8px;margin-bottom:2mm;">38 Rue Arago - 93000 Bobigny</div>' +
+    '<div class="line"></div>' +
+    '<div class="title">RE\u00c7U DE DON</div>' +
+    '<div class="line"></div>' +
+    '<div class="amount">' + S.amt + ' \u20ac</div>' +
+    '<div class="cat">' + S.name + '</div>' +
+    '<div class="line"></div>' +
+    '<div class="date">' + dateStr + ' \u00e0 ' + timeStr + '</div>' +
+    '<div class="ref">R\u00e9f: ' + refNum + '</div>' +
+    '<div class="line"></div>' +
+    '<div class="dua" style="direction:ltr;font-size:11px;">Qu\'Allah vous r\u00e9compense</div>' +
+    '<div class="footer">Merci pour votre g\u00e9n\u00e9rosit\u00e9</div>' +
+    '</body></html>';
+}
+
+function printTicket() {
+  if (printCooldown) return;
+  printCooldown = true;
+
+  // Pause le countdown pendant l'impression
+  if (resultInterval) clearInterval(resultInterval);
+  if (resultTimer) clearTimeout(resultTimer);
+
+  var now = new Date();
+  var dateStr = now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  var timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  var refNum = 'DON-' + now.getFullYear() + pad2(now.getMonth()+1) + pad2(now.getDate()) + '-' + pad2(now.getHours()) + pad2(now.getMinutes()) + pad2(now.getSeconds());
+
+  // Plugin natif USB ESC/POS (Android - imprimante thermique)
+  var printer = getPrinter();
+  if (printer) {
+    // D'abord vérifier le statut de l'imprimante
+    printer.status().then(function(st) {
+      console.log('Printer status:', JSON.stringify(st));
+
+      if (!st.connected) {
+        alert('Imprimante non detectee.\n' +
+              (st.usbDevicesCount > 0
+                ? st.usbDevicesCount + ' appareil(s) USB connecte(s) mais aucun reconnu comme imprimante.'
+                : 'Aucun appareil USB connecte.') +
+              '\nVerifiez le cable USB.');
+        printCooldown = false;
+        startResultCountdown();
+        return;
+      }
+
+      // Imprimante trouvée — lancer l'impression
+      var printerInfo = st.productName || st.name || ('VID:' + st.vendorId + ' PID:' + st.productId);
+      console.log('Printing to: ' + printerInfo);
+
+      printer.print({
+        amount: String(S.amt),
+        category: S.name,
+        date: dateStr,
+        time: timeStr,
+        reference: refNum
+      }).then(function(result) {
+        console.log('Print result:', JSON.stringify(result));
+        printCooldown = false;
+        startResultCountdown();
+      }).catch(function(err) {
+        alert('Erreur impression:\n' + (err.message || JSON.stringify(err)) +
+              '\nImprimante: ' + printerInfo);
+        printCooldown = false;
+        startResultCountdown();
+      });
+
+    }).catch(function(err) {
+      // status() a échoué — essayer d'imprimer quand même
+      console.log('Status check failed, trying print anyway:', err);
+      printer.print({
+        amount: String(S.amt),
+        category: S.name,
+        date: dateStr,
+        time: timeStr,
+        reference: refNum
+      }).then(function(result) {
+        printCooldown = false;
+        startResultCountdown();
+      }).catch(function(err2) {
+        alert('Erreur impression:\n' + (err2.message || JSON.stringify(err2)));
+        printCooldown = false;
+        startResultCountdown();
+      });
+    });
+
+  } else {
+    // Fallback navigateur (mode PC/test)
+    var ticketHTML = buildTicketHTML();
+    var printWin = window.open('', '_blank', 'width=300,height=500');
+    if (printWin) {
+      printWin.document.write(ticketHTML);
+      printWin.document.close();
+      printWin.print();
+      setTimeout(function() { printWin.close(); }, 3000);
+    }
+    setTimeout(function() {
+      printCooldown = false;
+      startResultCountdown();
+    }, 2000);
+  }
+}
+
+function showLoading(show) {
+  var overlay = document.getElementById('loading-overlay');
+  if (show) {
+    overlay.classList.add('active');
+  } else {
+    overlay.classList.remove('active');
+  }
+}
+
+// ===== RESULT COUNTDOWN =====
+function startResultCountdown() {
+  var remaining = RESULT_TIMEOUT;
+  var bar = document.getElementById('progress-bar');
+  var timer = document.getElementById('result-timer');
+
+  if (resultInterval) clearInterval(resultInterval);
+  if (resultTimer) clearTimeout(resultTimer);
+
+  bar.style.width = '100%';
+
+  resultInterval = setInterval(function() {
+    remaining -= 100;
+    var pct = Math.max(0, (remaining / RESULT_TIMEOUT) * 100);
+    bar.style.width = pct + '%';
+    var secs = Math.ceil(remaining / 1000);
+    timer.textContent = 'Retour automatique dans ' + secs + 's';
+    if (remaining <= 0) {
+      clearInterval(resultInterval);
+    }
+  }, 100);
+
+  resultTimer = setTimeout(function() {
+    clearInterval(resultInterval);
+    goTo('welcome');
+  }, RESULT_TIMEOUT);
+}
+
+// ===== INACTIVITY =====
+function resetInactivity() {
+  if (inactivityTimer) clearTimeout(inactivityTimer);
+  if (currentScreen !== 'welcome' && currentScreen !== 'result') {
+    inactivityTimer = setTimeout(function() {
+      goTo('welcome');
+    }, INACTIVITY_TIMEOUT);
+  }
+}
+
+// ===== RESET =====
+function resetState() {
+  S.amt = 0;
+  S.str = '';
+  S.fixed = null;
+  var btns = document.querySelectorAll('.quick-btn');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].classList.remove('selected');
+  }
+  var rt = document.getElementById('result-title');
+  if (rt) rt.style.direction = '';
+  if (resultInterval) clearInterval(resultInterval);
+  if (resultTimer) clearTimeout(resultTimer);
+  if (pollTimer) clearTimeout(pollTimer);
+}
+
+// ===== HORAIRES DE PRIERE =====
+// Configuration : coordonnées de la mosquée (à modifier selon votre ville)
+var PRAYER_CONFIG = {
+  latitude: 48.9066,    // Bobigny
+  longitude: 2.4400,
+  method: 4             // Methode 15 degres (Umm Al-Qura)
+};
+
+function loadPrayerTimes() {
+  var today = new Date();
+  var dd = String(today.getDate()).padStart(2, '0');
+  var mm = String(today.getMonth() + 1).padStart(2, '0');
+  var yyyy = today.getFullYear();
+
+  var url = 'https://api.aladhan.com/v1/timings/' + dd + '-' + mm + '-' + yyyy
+    + '?latitude=' + PRAYER_CONFIG.latitude
+    + '&longitude=' + PRAYER_CONFIG.longitude
+    + '&method=' + PRAYER_CONFIG.method;
+
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.code === 200 && data.data && data.data.timings) {
+        var t = data.data.timings;
+        document.getElementById('time-fajr').textContent = t.Fajr;
+        document.getElementById('time-dhuhr').textContent = t.Dhuhr;
+        document.getElementById('time-asr').textContent = t.Asr;
+        document.getElementById('time-maghrib').textContent = t.Maghrib;
+        document.getElementById('time-isha').textContent = t.Isha;
+        highlightCurrentPrayer(t);
+      }
+    })
+    .catch(function(err) {
+      console.log('Horaires de priere indisponibles:', err.message);
+    });
+}
+
+function highlightCurrentPrayer(timings) {
+  var now = new Date();
+  var nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+  var prayers = [
+    { id: 'fajr', time: timings.Fajr },
+    { id: 'dhuhr', time: timings.Dhuhr },
+    { id: 'asr', time: timings.Asr },
+    { id: 'maghrib', time: timings.Maghrib },
+    { id: 'isha', time: timings.Isha }
+  ];
+
+  // Convertir heures en minutes
+  var prayerMinutes = prayers.map(function(p) {
+    var parts = p.time.split(':');
+    return { id: p.id, minutes: parseInt(parts[0]) * 60 + parseInt(parts[1]) };
+  });
+
+  // Trouver la prière en cours (la dernière dont l'heure est passée)
+  var currentPrayer = null;
+  for (var i = prayerMinutes.length - 1; i >= 0; i--) {
+    if (nowMinutes >= prayerMinutes[i].minutes) {
+      currentPrayer = prayerMinutes[i].id;
+      break;
+    }
+  }
+  // Si aucune prière n'est passée (avant fajr), c'est isha de la veille
+  if (!currentPrayer) currentPrayer = 'isha';
+
+  // Appliquer la classe active
+  prayers.forEach(function(p) {
+    var card = document.getElementById('prayer-' + p.id);
+    if (card) {
+      if (p.id === currentPrayer) {
+        card.classList.add('active');
+      } else {
+        card.classList.remove('active');
+      }
+    }
+  });
+}
+
+// ===== KIOSK MODE PROTECTIONS =====
+history.pushState(null, null, location.href);
+window.addEventListener('popstate', function() {
+  history.pushState(null, null, location.href);
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+    e.preventDefault();
+  }
+});
+
+document.addEventListener('contextmenu', function(e) {
+  e.preventDefault();
+});
+
+document.addEventListener('selectstart', function(e) {
+  e.preventDefault();
+});
+
+document.addEventListener('touchstart', function() {
+  resetInactivity();
+}, { passive: true });
+
+document.addEventListener('click', function() {
+  resetInactivity();
+});
+
+// ===== INIT =====
+loadPrayerTimes();
+
+// ===== SUMUP STATE CACHE =====
+var sumupReady = false;       // true = logged in + reader prepared
+var sumupInitDone = false;    // true = init sequence completed
+var sumupUsbConnected = false;
+var sumupLoggedIn = false;
+var sumupLoginInProgress = false; // true = login en cours, éviter double login
+
+// Initialiser SumUp SDK — v3 : UN SEUL login, pas de double/fallback
+// Java fait SumUpState.init() dans onCreate (rapide ~400ms)
+// JS fait le login unique ici dès le chargement
+// En mode serveur, le SDK n'est pas nécessaire (tout passe par l'API Cloud)
+(function() {
+  if (CONFIG.SUMUP_READER_ID) { console.log('[SumUp] Mode Cloud API — SDK natif désactivé'); sumupInitDone = true; return; }
+  var p = getSumUp();
+  if (!p) { console.log('SumUp plugin NON trouvé'); return; }
+
+  var t0 = Date.now();
+  console.log('[SumUp] JS init v3...');
+
+  // Étape 1: Init SDK (le plugin détecte si MainActivity l'a déjà fait)
+  p.init().then(function(initRes) {
+    console.log('[SumUp] init (' + (Date.now() - t0) + 'ms):', JSON.stringify(initRes));
+
+    // Check terminal USB en parallèle
+    p.checkTerminal().then(function(term) {
+      term = term || {};
+      sumupUsbConnected = !!(term.usbConnected);
+      console.log('[SumUp] Terminal (' + (Date.now() - t0) + 'ms): usb=' + sumupUsbConnected + ' devices=' + (term.allDevices || ''));
+    }).catch(function() {});
+
+    // FAST PATH: déjà connecté (session SumUp cachée depuis un run précédent)
+    if (initRes && initRes.alreadyLoggedIn) {
+      console.log('[SumUp] ✅ FAST PATH — déjà connecté (session cachée)!');
+      sumupLoggedIn = true;
+      sumupReady = true;
+      sumupInitDone = true;
+      p.prepareCheckout().then(function() {
+        console.log('[SumUp] ✅ PRÊT en ' + (Date.now() - t0) + 'ms');
+      }).catch(function() {});
+      return;
+    }
+
+    // PAS connecté → login unique avec access token
+    console.log('[SumUp] Login automatique (access token)...');
+    sumupLoginInProgress = true;
+    return p.login({ accessToken: 'sup_sk_ooFlUBNpqpCDQbS4Wu03o4RQXRfaGhqo7' }).then(function(res) {
+      sumupLoginInProgress = false;
+      console.log('[SumUp] Login result (' + (Date.now() - t0) + 'ms):', JSON.stringify(res));
+      sumupLoggedIn = !!(res && res.success);
+      if (sumupLoggedIn) {
+        // prepareCheckout() — réveille le lecteur et prépare la connexion
+        // On l'appelle 3 fois avec des délais pour maximiser les chances
+        // de warm-up du terminal avant le 1er paiement
+        return p.prepareCheckout().then(function() {
+          console.log('[SumUp] prepareCheckout #1 OK (' + (Date.now() - t0) + 'ms)');
+        }).catch(function() {}).then(function() {
+          // 2ème appel après 3 secondes
+          return new Promise(function(resolve) {
+            setTimeout(function() {
+              p.prepareCheckout().then(function() {
+                console.log('[SumUp] prepareCheckout #2 OK (' + (Date.now() - t0) + 'ms)');
+              }).catch(function() {}).then(resolve);
+            }, 3000);
+          });
+        }).then(function() {
+          // 3ème appel après 3 secondes de plus
+          return new Promise(function(resolve) {
+            setTimeout(function() {
+              p.prepareCheckout().then(function() {
+                console.log('[SumUp] prepareCheckout #3 OK (' + (Date.now() - t0) + 'ms)');
+              }).catch(function() {}).then(resolve);
+            }, 3000);
+          });
+        }).then(function() {
+          sumupReady = true;
+          console.log('[SumUp] ✅ PRÊT en ' + (Date.now() - t0) + 'ms');
+        });
+      } else {
+        console.log('[SumUp] Login échoué:', (res && res.message) || 'raison inconnue');
+      }
+    }).catch(function(e) {
+      sumupLoginInProgress = false;
+      throw e;
+    });
+  }).catch(function(e) {
+    console.log('[SumUp] Init error:', e.message || e);
+  }).then(function() {
+    sumupInitDone = true;
+    console.log('[SumUp] Init terminé. ready=' + sumupReady + ' usb=' + sumupUsbConnected + ' logged=' + sumupLoggedIn);
+  });
+
+  // Garder le lecteur warm : re-prepareCheckout toutes les 30 secondes
+  setInterval(function() {
+    if (sumupReady && currentScreen === 'welcome') {
+      p.prepareCheckout().catch(function() {});
+    }
+  }, 30000);
+})();
+
+// Auto-détection quand le Solo se réveille / se reconnecte en USB
+window.onUsbDeviceAttached = function(vendorId, productName) {
+  console.log('[SumUp] USB device attached: VID=' + vendorId + ' name=' + productName);
+  if (vendorId === 13403 || (productName && productName.toLowerCase().indexOf('solo') >= 0)) {
+    console.log('[SumUp] Solo reconnecté! Init rapide...');
+    sumupUsbConnected = true;
+    var p = getSumUp();
+    if (p) {
+      // Si pas logged in, login + prepare. Sinon juste prepare.
+      var chain = sumupLoggedIn
+        ? Promise.resolve()
+        : p.login({ accessToken: 'sup_sk_ooFlUBNpqpCDQbS4Wu03o4RQXRfaGhqo7' }).then(function(res) {
+            sumupLoggedIn = !!(res && res.success);
+          }).catch(function() {});
+
+      chain.then(function() {
+        return p.prepareCheckout();
+      }).then(function() {
+        sumupReady = true;
+        console.log('[SumUp] Lecteur prêt après reconnexion USB');
+      }).catch(function(e) {
+        console.log('[SumUp] prepareCheckout USB error:', e.message || e);
+      });
+    }
+  }
+};
+
+// Mode indicator (en bas de l'écran d'accueil, discret — seulement si terminal détecté)
+(function() {
+  var modeText = '';
+  if (IS_SERVER_MODE) {
+    modeText = 'Connecté au serveur ' + window.location.host;
+  } else if (getSumUp()) {
+    modeText = 'Terminal SumUp (USB)';
+  }
+  if (modeText) {
+    var modeTag = document.createElement('div');
+    modeTag.style.cssText = 'position:fixed;bottom:8px;left:50%;transform:translateX(-50%);font-size:11px;color:rgba(168,196,176,0.4);z-index:5;';
+    modeTag.textContent = modeText;
+    document.body.appendChild(modeTag);
+  }
+})();
+
+// ===== ADMIN KIOSK MODE =====
+var adminPin = '';
+var adminValidatedPin = '';
+var adminMode = 'login'; // 'login', 'change_old', 'change_new', 'change_confirm'
+var adminNewPin = '';
+var adminTaps = 0;
+var adminTapTimer = null;
+
+// Tap logo 5 fois pour ouvrir l'admin
+(function() {
+  var logo = document.querySelector('.welcome-logo');
+  if (logo) {
+    logo.addEventListener('click', function(e) {
+      e.stopPropagation();
+      adminTaps++;
+      if (adminTapTimer) clearTimeout(adminTapTimer);
+      adminTapTimer = setTimeout(function() { adminTaps = 0; }, 3000);
+      if (adminTaps >= 5) {
+        adminTaps = 0;
+        showAdminOverlay();
+      }
+    });
+  }
+})();
+
+function showAdminOverlay() {
+  adminPin = '';
+  adminMode = 'login';
+  adminValidatedPin = '';
+  adminNewPin = '';
+  updatePinDots();
+  document.getElementById('admin-pin-title').textContent = 'Acc\u00e8s Administrateur';
+  document.getElementById('admin-pin-error').textContent = '';
+  document.getElementById('admin-pin-screen').style.display = 'flex';
+  document.getElementById('admin-menu').style.display = 'none';
+  document.getElementById('admin-overlay').style.display = 'flex';
+}
+
+// ===== ADMIN DASHBOARD — Statut et Stats =====
+function refreshAdminDashboard() {
+  // Statut du système
+  var statusLines = [];
+  statusLines.push('<b>SumUp:</b> ' + (sumupLoggedIn ? '<span style="color:#2ecc71;">Connect\u00e9</span>' : '<span style="color:#e74c3c;">D\u00e9connect\u00e9</span>'));
+  statusLines.push('<b>Terminal Solo:</b> ' + (sumupUsbConnected ? '<span style="color:#2ecc71;">USB branch\u00e9</span>' : '<span style="color:#e74c3c;">Non d\u00e9tect\u00e9</span>'));
+  statusLines.push('<b>Pr\u00eat pour paiement:</b> ' + (sumupReady ? '<span style="color:#2ecc71;">Oui</span>' : '<span style="color:#ffa500;">Non</span>'));
+
+  var printer = getPrinter();
+  if (printer) {
+    printer.status({}).then(function(s) {
+      var pStatus = (s && s.connected) ? '<span style="color:#2ecc71;">Connect\u00e9e</span>' : '<span style="color:#e74c3c;">Non d\u00e9tect\u00e9e</span>';
+      statusLines.push('<b>Imprimante:</b> ' + pStatus);
+      document.getElementById('admin-status-content').innerHTML = statusLines.join('<br>');
+    }).catch(function() {
+      statusLines.push('<b>Imprimante:</b> <span style="color:#999;">Erreur</span>');
+      document.getElementById('admin-status-content').innerHTML = statusLines.join('<br>');
+    });
+  } else {
+    statusLines.push('<b>Imprimante:</b> <span style="color:#999;">Plugin non disponible</span>');
+  }
+
+  var kiosk = getKiosk();
+  if (kiosk) {
+    kiosk.status({}).then(function(ks) {
+      statusLines.push('<b>Mode kiosk:</b> ' + (ks.locked ? '<span style="color:#2ecc71;">Verrouill\u00e9</span>' : '<span style="color:#ffa500;">D\u00e9verrouill\u00e9</span>'));
+      statusLines.push('<b>Device Owner:</b> ' + (ks.deviceOwner ? 'Oui' : 'Non'));
+      document.getElementById('admin-status-content').innerHTML = statusLines.join('<br>');
+      updateKioskButton(ks.locked);
+    }).catch(function() {
+      document.getElementById('admin-status-content').innerHTML = statusLines.join('<br>');
+    });
+  } else {
+    updateKioskButton(false);
+  }
+
+  document.getElementById('admin-status-content').innerHTML = statusLines.join('<br>');
+
+  // Statistiques du jour
+  var todayStats = getDailyStats();
+  var statsLines = [];
+  statsLines.push('<b>Nombre de dons:</b> <span style="color:#D4AF37;font-size:16px;font-weight:bold;">' + todayStats.count + '</span>');
+  statsLines.push('<b>Total collect\u00e9:</b> <span style="color:#2ecc71;font-size:16px;font-weight:bold;">' + todayStats.total.toFixed(2) + ' \u20ac</span>');
+  statsLines.push('<b>Don moyen:</b> ' + (todayStats.count > 0 ? (todayStats.total / todayStats.count).toFixed(2) + ' \u20ac' : '—'));
+  statsLines.push('<b>Dernier don:</b> ' + (todayStats.lastAmount ? todayStats.lastAmount.toFixed(2) + ' \u20ac \u00e0 ' + todayStats.lastTime : '—'));
+  document.getElementById('admin-stats-content').innerHTML = statsLines.join('<br>');
+}
+
+// ===== STATISTIQUES JOURNALIÈRES =====
+function getTodayKey() {
+  var d = new Date();
+  return 'stats_' + d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function getDailyStats() {
+  try {
+    var data = JSON.parse(localStorage.getItem(getTodayKey()) || '{}');
+    return {
+      count: data.count || 0,
+      total: data.total || 0,
+      lastAmount: data.lastAmount || 0,
+      lastTime: data.lastTime || ''
+    };
+  } catch(e) {
+    return { count: 0, total: 0, lastAmount: 0, lastTime: '' };
+  }
+}
+
+function recordDonation(amount) {
+  var key = getTodayKey();
+  var data = getDailyStats();
+  data.count++;
+  data.total += amount;
+  data.lastAmount = amount;
+  var now = new Date();
+  data.lastTime = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  localStorage.setItem(key, JSON.stringify(data));
+}
+
+function resetDailyStats() {
+  localStorage.removeItem(getTodayKey());
+}
+
+function closeAdmin() {
+  document.getElementById('admin-overlay').style.display = 'none';
+  adminPin = '';
+  adminValidatedPin = '';
+  adminMode = '';
+}
+
+function adminPinPress(digit) {
+  if (adminPin.length >= 4) return;
+  adminPin += digit;
+  updatePinDots();
+  if (adminPin.length === 4) {
+    setTimeout(validateAdminPin, 200);
+  }
+}
+
+function adminPinDel() {
+  adminPin = adminPin.slice(0, -1);
+  updatePinDots();
+  document.getElementById('admin-pin-error').textContent = '';
+}
+
+function updatePinDots() {
+  var dots = '';
+  for (var i = 0; i < 4; i++) {
+    dots += i < adminPin.length ? '\u25CF' : '\u25CB';
+  }
+  document.getElementById('pin-dots').textContent = dots;
+}
+
+function validateAdminPin() {
+  var kiosk = getKiosk();
+
+  if (adminMode === 'login') {
+    if (kiosk) {
+      kiosk.verifyPin({ pin: adminPin }).then(function(res) {
+        if (res.valid) {
+          adminValidatedPin = adminPin;
+          adminPin = '';
+          document.getElementById('admin-pin-screen').style.display = 'none';
+          document.getElementById('admin-menu').style.display = 'flex';
+          refreshAdminDashboard();
+        } else {
+          document.getElementById('admin-pin-error').textContent = 'PIN incorrect';
+          adminPin = '';
+          updatePinDots();
+        }
+      }).catch(function() {
+        document.getElementById('admin-pin-error').textContent = 'Erreur de v\u00e9rification';
+        adminPin = '';
+        updatePinDots();
+      });
+    } else {
+      // Mode navigateur — PIN par d\u00e9faut 1234
+      if (adminPin === '1234') {
+        adminValidatedPin = adminPin;
+        adminPin = '';
+        document.getElementById('admin-pin-screen').style.display = 'none';
+        document.getElementById('admin-menu').style.display = 'flex';
+        refreshAdminDashboard();
+      } else {
+        document.getElementById('admin-pin-error').textContent = 'PIN incorrect';
+        adminPin = '';
+        updatePinDots();
+      }
+    }
+  } else if (adminMode === 'change_old') {
+    // V\u00e9rifier l'ancien PIN
+    if (kiosk) {
+      kiosk.verifyPin({ pin: adminPin }).then(function(res) {
+        if (res.valid) {
+          adminValidatedPin = adminPin;
+          adminPin = '';
+          adminMode = 'change_new';
+          updatePinDots();
+          document.getElementById('admin-pin-title').textContent = 'Nouveau PIN';
+          document.getElementById('admin-pin-error').textContent = '';
+        } else {
+          document.getElementById('admin-pin-error').textContent = 'PIN actuel incorrect';
+          adminPin = '';
+          updatePinDots();
+        }
+      });
+    }
+  } else if (adminMode === 'change_new') {
+    adminNewPin = adminPin;
+    adminPin = '';
+    adminMode = 'change_confirm';
+    updatePinDots();
+    document.getElementById('admin-pin-title').textContent = 'Confirmer le PIN';
+    document.getElementById('admin-pin-error').textContent = '';
+  } else if (adminMode === 'change_confirm') {
+    if (adminPin === adminNewPin) {
+      var kiosk2 = getKiosk();
+      if (kiosk2) {
+        kiosk2.setPin({ oldPin: adminValidatedPin, newPin: adminNewPin }).then(function() {
+          adminValidatedPin = adminNewPin;
+          adminPin = '';
+          adminMode = 'login';
+          document.getElementById('admin-pin-screen').style.display = 'none';
+          document.getElementById('admin-menu').style.display = 'flex';
+          document.getElementById('admin-pin-error').textContent = '';
+          // Afficher confirmation temporaire
+          var menu = document.getElementById('admin-menu');
+          var msg = document.createElement('div');
+          msg.style.cssText = 'color:#2ecc71;font-size:14px;margin-bottom:12px;';
+          msg.textContent = 'PIN chang\u00e9 avec succ\u00e8s !';
+          menu.insertBefore(msg, menu.children[2]);
+          setTimeout(function() { if (msg.parentNode) msg.parentNode.removeChild(msg); }, 3000);
+        }).catch(function(e) {
+          document.getElementById('admin-pin-error').textContent = e.message || 'Erreur';
+          adminPin = '';
+          updatePinDots();
+        });
+      }
+    } else {
+      document.getElementById('admin-pin-error').textContent = 'Les PIN ne correspondent pas';
+      adminPin = '';
+      adminNewPin = '';
+      adminMode = 'change_new';
+      updatePinDots();
+      document.getElementById('admin-pin-title').textContent = 'Nouveau PIN';
+    }
+  }
+}
+
+function updateKioskButton(locked) {
+  var btn = document.getElementById('btn-kiosk-toggle');
+  if (!btn) return;
+  if (locked) {
+    btn.innerHTML = '&#128274; Mode Kiosque : <span style="color:#2ecc71;font-weight:bold;">ON</span>';
+    btn.style.borderColor = 'rgba(46,204,113,0.4)';
+  } else {
+    btn.innerHTML = '&#128275; Mode Kiosque : <span style="color:#e74c3c;font-weight:bold;">OFF</span>';
+    btn.style.borderColor = 'rgba(231,76,60,0.4)';
+  }
+}
+
+function adminAction(action) {
+  var kiosk = getKiosk();
+
+  // Actions qui ne nécessitent pas le KioskPlugin
+  if (action === 'testprint') {
+    var printer = getPrinter();
+    if (!printer) { alert('Imprimante non disponible'); return; }
+    var testLines = [
+      '================================',
+      '   MOSQUEE DU CIMETIERE DE',
+      '         BOBIGNY',
+      '================================',
+      '',
+      '   ** TEST IMPRIMANTE **',
+      '',
+      '  Date: ' + new Date().toLocaleDateString('fr-FR'),
+      '  Heure: ' + new Date().toLocaleTimeString('fr-FR'),
+      '',
+      '  Imprimante OK !',
+      '',
+      '================================',
+      ''
+    ];
+    printer.print({ text: testLines.join('\n') }).then(function() {
+      alert('Test imprimante envoy\u00e9 !');
+    }).catch(function(e) {
+      alert('Erreur imprimante: ' + (e.message || e));
+    });
+    return;
+  }
+
+  if (action === 'reconnect') {
+    var p = getSumUp();
+    if (!p) { alert('Plugin SumUp non disponible'); return; }
+    alert('Reconnexion en cours...\nLe terminal va \u00eatre r\u00e9initialis\u00e9.');
+    closeAdmin();
+    sumupReady = false;
+    sumupLoggedIn = false;
+    sumupInitDone = false;
+    p.logout({}).catch(function(){}).then(function() {
+      return p.login({ accessToken: 'sup_sk_ooFlUBNpqpCDQbS4Wu03o4RQXRfaGhqo7' });
+    }).then(function(res) {
+      sumupLoggedIn = !!(res && res.success);
+      if (sumupLoggedIn) {
+        return p.prepareCheckout().then(function() {
+          sumupReady = true;
+          console.log('[SumUp] Admin: reconnexion r\u00e9ussie');
+          // Relancer phantom checkout
+          p.pay({ amount: 1.00, title: 'Warm-up', currency: 'EUR', skipFailed: true }).catch(function(){});
+        });
+      }
+    }).catch(function(e) {
+      console.log('[SumUp] Admin: reconnexion \u00e9chou\u00e9e:', e.message || e);
+    });
+    return;
+  }
+
+  if (action === 'resetstats') {
+    if (confirm('R\u00e9initialiser les statistiques du jour ?')) {
+      resetDailyStats();
+      refreshAdminDashboard();
+      alert('Statistiques r\u00e9initialis\u00e9es !');
+    }
+    return;
+  }
+
+  if (action === 'changepin') {
+    // Changement de PIN — ne nécessite pas kiosk sur navigateur
+    adminPin = '';
+    adminMode = 'change_old';
+    updatePinDots();
+    document.getElementById('admin-pin-title').textContent = 'PIN actuel';
+    document.getElementById('admin-pin-error').textContent = '';
+    document.getElementById('admin-menu').style.display = 'none';
+    document.getElementById('admin-pin-screen').style.display = 'flex';
+    return;
+  }
+
+  // Actions nécessitant le KioskPlugin
+  if (!kiosk) {
+    alert('Mode kiosk non disponible (navigateur)');
+    return;
+  }
+
+  if (action === 'kioskToggle') {
+    kiosk.status({}).then(function(ks) {
+      if (ks.locked) {
+        kiosk.unlock({ pin: adminValidatedPin }).then(function() {
+          updateKioskButton(false);
+        }).catch(function(e) { alert('Erreur: ' + (e.message || e)); });
+      } else {
+        kiosk.lock().then(function() {
+          updateKioskButton(true);
+        }).catch(function(e) { alert('Erreur: ' + (e.message || e)); });
+      }
+    }).catch(function(e) { alert('Erreur: ' + (e.message || e)); });
+    return;
+  } else if (action === 'unlock') {
+    kiosk.unlock({ pin: adminValidatedPin }).then(function() {
+      closeAdmin();
+    }).catch(function(e) {
+      alert('Erreur: ' + (e.message || e));
+    });
+  } else if (action === 'settings') {
+    kiosk.openSettings({ pin: adminValidatedPin }).then(function() {
+      closeAdmin();
+    }).catch(function(e) {
+      alert('Erreur: ' + (e.message || e));
+    });
+  } else if (action === 'exit') {
+    if (confirm('Vraiment quitter l\'application ?')) {
+      kiosk.exitApp({ pin: adminValidatedPin }).catch(function(e) {
+        alert('Erreur: ' + (e.message || e));
+      });
+    }
+  }
+}
+
+// ===== OTA AUTO-UPDATE =====
+(function() {
+  var OTA_BASE = localStorage.getItem('borne_ota_url') || 'https://bils91.github.io/borne-don-ota';
+  var CHECK_MS = (parseInt(localStorage.getItem('borne_ota_interval')) || 5) * 60 * 1000;
+
+  function otaCheck() {
+    fetch(OTA_BASE + '/version.json', { cache: 'no-store' })
+      .then(function(r) { return r.json(); })
+      .then(function(info) {
+        var currentVer = localStorage.getItem('borne_ota_ver') || '0.0.0';
+        if (info.version && info.version !== currentVer) {
+          console.log('[OTA] Nouvelle version: ' + info.version + ' (actuelle: ' + currentVer + ')');
+          fetch(OTA_BASE + '/app.html', { cache: 'no-store' })
+            .then(function(r) { return r.text(); })
+            .then(function(html) {
+              localStorage.setItem('borne_ota_app', html);
+              localStorage.setItem('borne_ota_ver', info.version);
+              console.log('[OTA] v' + info.version + ' en cache');
+              if (typeof currentScreen !== 'undefined' && currentScreen === 'welcome') {
+                console.log('[OTA] Rechargement...');
+                location.reload();
+              } else {
+                console.log('[OTA] MAJ en attente — reload au retour accueil');
+              }
+            })
+            .catch(function(e) { console.log('[OTA] DL erreur:', e.message); });
+        }
+      })
+      .catch(function(e) { console.log('[OTA] Check fail:', e.message); });
+  }
+
+  setTimeout(otaCheck, 10000);
+  setInterval(otaCheck, CHECK_MS);
+
+  window.otaForceCheck = otaCheck;
+  window.otaGetInfo = function() {
+    return { url: OTA_BASE, version: localStorage.getItem('borne_ota_ver') || '0.0.0', interval: CHECK_MS / 60000 + ' min' };
+  };
+})();
+
+// Auto-lock kiosk au démarrage
+(function() {
+  var kiosk = getKiosk();
+  if (kiosk) {
+    kiosk.lock().then(function(res) {
+      console.log('Kiosk lock:', JSON.stringify(res));
+    }).catch(function(e) {
+      console.log('Kiosk lock skip:', e.message || e);
+    });
+  }
+})();
+</script>
+</body>
+</html>
